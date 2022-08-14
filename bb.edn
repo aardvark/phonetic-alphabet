@@ -1,0 +1,19 @@
+{:tasks
+ {:requires ([babashka.fs :as fs])
+  switch-to-docs (shell "cmd /c git checkout docs")
+  clean-docs (do (println "Removing docs.")
+                 (fs/delete-tree "docs")
+                 (fs/create-dir "docs"))
+  release (shell "cmd /c npx shadow-cljs release app")
+  copy-js-to-docs (do (println "Copy released app to docs")
+                      (doall (map (fn [p] (fs/create-dirs p)) ["docs" "docs/css" "docs/js"]))
+                      (doall (map (fn [p] (fs/copy (str "public/" p)
+                                                   (str "docs/" p)
+                                                   {:replace-existing true}))
+                                  ["index.html" "js/app.js" "css/site.css"])))
+
+  release-docs (do
+                 (run 'switch-to-docs)
+                 (run 'release)
+                 (run 'clean-docs)
+                 (run 'copy-js-to-docs))}}
