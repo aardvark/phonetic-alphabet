@@ -13,7 +13,6 @@
                                   ["index.html" "js/app.js" "css/site.css"])))
 
   release-docs (do
-                 (run 'switch-to-docs)
                  (run 'release)
                  (run 'clean-docs)
                  (run 'copy-js-to-docs))}}

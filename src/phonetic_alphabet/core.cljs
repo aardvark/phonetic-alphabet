@@ -79,39 +79,58 @@
   [x]
   (if (= x " ")
     [:br]
-    [:span [:span {:style {:strong "bold" :color "red"}} (first (s/upper-case x))] (rest x) " "])
+    [:span.fs-2 
+     [:span {:style {:strong "bold" :color "red"}} (first (s/upper-case x))]
+     (rest x) " "])
   )
 
 (defn input-and-a-field [dictionary]
-  (let [value (r/atom "")]
+  (let [value (r/atom "HALP")]
     (fn []
       [:div
-       [:input {:type "text" :value @value
-                :on-change #(reset! value (-> % .-target .-value))}]
-       [:p
-        (doall
-         (map-indexed
-          (fn [i x]
-            ^{:key (str x "-" i)}
-            [capitalize-and-paint (get @dictionary (.normalize (s/lower-case x)) " ")])
-          @value))]])
+       [:div.form-group
+        [:label {:for "textToTranslate"} "Text to translate:"]
+        [:input#textToTranslate.form-control
+         {:type "text" :value @value
+          :on-change #(reset! value (-> % .-target .-value))}]]
+       
+       [:div.row
+        [:label "Result:"]
+        [:div
+         (doall
+          (map-indexed
+           (fn [i x]
+             ^{:key (str x "-" i)}
+             [capitalize-and-paint (get (if (= @dictionary "ICAO") icao din5009)
+                                        (.normalize (s/lower-case x)) " ")])
+           @value))]]])
     )
   )
+
 
 ;; -------------------------
 ;; Views
 
 (defn home-page []
-  (let [dictionary (r/atom icao)]
+  (let [dictionary (r/atom "ICAO")]
   (fn []
-    [:div
-     [:span
-      "Phonetic alphabet"
-      [:br]
-      "Dictionary: " (:name @dictionary)
-      [:input {:type "button" :value "Switch"
-               :on-click #(swap! dictionary (fn [x] (if (= (:name x) "ICAO") din5009 icao)))}]]
-     [input-and-a-field dictionary]])))
+    [:div.container
+     [:div.card.border-light
+      [:div.card-header
+       [:h1 "Phonetic alphabet (" @dictionary ")"]]
+      [:div.card-body
+       [:div
+        [:div.form-group
+         [:label
+          {:for "dictionary"}
+          "Dictionary:"]
+         [:select#dictionary.form-select
+          {:on-change #(reset! dictionary (.-value (.querySelector js/document "#dictionary")))}
+          [:option "ICAO"]
+          [:option "DIN5009"]]]]
+       [:div
+        [input-and-a-field dictionary]]]]
+     ])))
 
 ;; -------------------------
 ;; Initialize app
