@@ -1,6 +1,5 @@
 {:tasks
  {:requires ([babashka.fs :as fs])
-  switch-to-docs (shell "git checkout docs")
   clean-docs (do (println "Removing docs.")
                  (fs/delete-tree "docs")
                  (fs/create-dir "docs"))
